@@ -1,1 +1,98 @@
 
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>خالد المقرمي شات | خالد وليد المقرمي</title>
+  <meta name="description" content="موقع خالد وليد المقرمي - خالد المقرمي شات. دردشة ذكية مباشرة مع بوت يجيب على استفساراتك.">
+  <meta name="keywords" content="خالد المقرمي, خالد وليد المقرمي, خالد المقرمي شات, Khaled Al-Maqrami">
+  <meta name="author" content="خالد وليد المقرمي">
+  
+  <!-- Open Graph للظهور في فيسبوك -->
+  <meta property="og:title" content="خالد المقرمي شات">
+  <meta property="og:description" content="دردشة ذكية مع بوت - خالد وليد المقرمي">
+  <meta property="og:type" content="website">
+  
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: auto; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h1 { color: #1877f2; margin-top: 0; font-size: 22px; }
+    .subtitle { color: #65676b; font-size: 14px; margin-bottom: 16px; }
+    #chat-box { height: 400px; overflow-y: auto; border: 1px solid #e4e6eb; border-radius: 12px; padding: 12px; margin-bottom: 12px; background: #fafafa; display: flex; flex-direction: column; }
+    .msg { padding: 10px 14px; margin: 6px 0; border-radius: 18px; max-width: 75%; word-wrap: break-word; line-height: 1.4; font-size: 15px; }
+    .user { background: #1877f2; color: white; align-self: flex-end; border-bottom-left-radius: 4px; }
+    .bot { background: #e4e6eb; color: #050505; align-self: flex-start; border-bottom-right-radius: 4px; }
+    .input-area { display: flex; gap: 8px; }
+    input { flex: 1; padding: 12px 16px; border: 1px solid #e4e6eb; border-radius: 24px; outline: none; font-size: 15px; }
+    input:focus { border-color: #1877f2; }
+    button { padding: 12px 24px; background: #1877f2; color: white; border: none; border-radius: 24px; cursor: pointer; font-size: 15px; font-weight: bold; }
+    button:hover { background: #166fe5; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    footer { text-align: center; color: #65676b; font-size: 13px; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>خالد المقرمي شات</h1>
+    <p class="subtitle">خالد وليد المقرمي — دردشة ذكية مباشرة</p>
+    <div id="chat-box"></div>
+    <div class="input-area">
+      <input type="text" id="msg-input" placeholder="اكتب رسالتك..." autocomplete="off">
+      <button id="send-btn" onclick="sendMessage()">إرسال</button>
+    </div>
+    <footer>© خالد وليد المقرمي</footer>
+  </div>
+
+  <script>
+    const chatBox = document.getElementById('chat-box');
+    const input = document.getElementById('msg-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    let sessionId = localStorage.getItem('sessionId');
+    if (!sessionId) {
+      sessionId = 'user_' + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('sessionId', sessionId);
+    }
+
+    function addMessage(text, sender) {
+      const div = document.createElement('div');
+      div.className = 'msg ' + sender;
+      div.textContent = text;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+      
+      addMessage(text, 'user');
+      input.value = '';
+      sendBtn.disabled = true;
+      
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, sessionId: sessionId })
+        });
+        const data = await res.json();
+        addMessage(data.reply || 'عذراً، حدث خطأ.', 'bot');
+      } catch (e) {
+        addMessage('تعذر الاتصال بالخادم.', 'bot');
+      } finally {
+        sendBtn.disabled = false;
+        input.focus();
+      }
+    }
+
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    addMessage('أهلاً بك! أنا بوت خالد المقرمي. كيف يمكنني مساعدتك؟', 'bot');
+  </script>
+</body>
+</html>
